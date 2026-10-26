@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book your adventures</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#12302E;--mute:#4F6B69;--teal:#0B6F6A;--line:#CFE0DD;--bg:#EAF3F1;--sun:#F2A33A}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:'Plus Jakarta Sans',system-ui,sans-serif;color:var(--ink)}
+.wrap{max-width:720px;margin:0 auto;padding:24px 16px 64px;display:flex;flex-direction:column;gap:20px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:18px}
+.hero{background:var(--teal);color:#fff;border-radius:16px;padding:32px 24px;display:flex;flex-direction:column;gap:12px}
+.hero small{font-weight:700;color:#F7D9A4;font-size:14px}
+h1{margin:0;font-size:32px;line-height:1.15;font-weight:800}
+h2{margin:0;font-size:21px}
+p{margin:0}
+.sub{color:var(--mute);font-size:14px;line-height:1.5}
+.sec{display:flex;align-items:center;gap:12px}
+.num{width:36px;height:36px;border-radius:50%;background:var(--sun);font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+.f{display:flex;flex-direction:column;gap:8px;font-weight:600;font-size:15px;border:0;padding:0;margin:0;min-width:0}
+.f small{font-weight:400;color:var(--mute);font-size:13px}
+.req{color:#B3261E}
+input[type=text],input[type=tel],input[type=date],input[type=time],input[type=number],textarea{font:inherit;font-weight:400;padding:12px 14px;border:1px solid #6F8E8A;border-radius:10px;min-height:44px;background:#fff;color:var(--ink);width:100%}
+textarea{min-height:96px}
+:focus-visible{outline:3px solid var(--teal);outline-offset:2px}
+.row{display:flex;gap:16px;flex-wrap:wrap}.row>*{flex:1 1 170px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.tile{display:flex;gap:14px;align-items:flex-start;border:2px solid var(--line);border-radius:14px;padding:16px;cursor:pointer;min-height:44px}
+.tile:has(input:checked){border-color:var(--teal);background:#F2FAF9}
+.tile input{width:22px;height:22px;accent-color:var(--teal);margin-top:2px;flex:none}
+.tile b{font-size:16px}
+.block{border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:16px;background:#F7FBFA}
+.block h3{margin:0;font-size:17px;color:var(--teal)}
+.block[hidden]{display:none}
+.chips{display:flex;gap:10px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:8px;border:1px solid #6F8E8A;border-radius:999px;padding:10px 16px;min-height:44px;font-weight:600;font-size:14px;background:#fff;cursor:pointer}
+.chip input{accent-color:var(--teal);width:18px;height:18px;margin:0}
+.chip:has(input:checked){border-color:var(--teal);background:#E3F1EF}
+.agree{border-radius:12px;align-items:flex-start;line-height:1.4}
+.btn{font:inherit;font-weight:700;font-size:16px;background:var(--teal);color:#fff;border:0;border-radius:12px;padding:14px 28px;min-height:48px;cursor:pointer}
+.btn:disabled{opacity:.6;cursor:wait}
+.link{font:inherit;font-weight:600;background:none;border:0;color:var(--teal);text-decoration:underline;min-height:44px;cursor:pointer}
+.msg{padding:12px 14px;border-radius:10px;font-size:14px;line-height:1.5}
+.err{background:#FBEAEA;color:#8C1D18}.ok{background:#E9F5F1}
+.hp{position:absolute;left:-9999px}
+pre{white-space:pre-wrap;font:inherit;font-size:14px;line-height:1.6;margin:0}
+a.btn{display:inline-block;text-decoration:none;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="hero"><small id="hName"></small><h1>Book your adventures</h1><p id="hLine" style="line-height:1.5;color:#E3F1EF"></p></div>
+<form id="form" class="wrap" style="padding:0" novalidate>
+<div class="card">
+<div class="sec"><div class="num">1</div><h2>About you</h2></div>
+<label class="f">Full name <span class="req">*</span><input type="text" name="name" required autocomplete="name"></label>
+<label class="f">WhatsApp number <span class="req">*</span><small>Include the country code, for example +94 … We confirm your booking here.</small><input type="tel" name="whatsapp" required autocomplete="tel" inputmode="tel"></label>
+<div class="row">
+<label class="f">Check-in date <span class="req">*</span><input type="date" name="checkin" required></label>
+<label class="f">Check-out date <span class="req">*</span><input type="date" name="checkout" required></label>
+</div>
+<div class="row">
+<label class="f">Room name or number<input type="text" name="room" placeholder="For example, Room 2"></label>
+<label class="f">Number of guests <span class="req">*</span><input type="number" name="guests" min="1" required></label>
+</div>
+</div>
+<div class="card">
+<div class="sec"><div class="num">2</div><h2>What would you like to book?</h2></div>
+<p class="sub">Tick everything you’re interested in.</p>
+<div class="grid" id="tiles"></div>
+</div>
+<div class="card" id="detailsCard" hidden>
+<div class="sec"><div class="num">3</div><h2>Your details</h2></div>
+<div id="blocks" style="display:flex;flex-direction:column;gap:18px"></div>
+</div>
+<div class="card">
+<div class="sec"><div class="num" id="lastNum">3</div><h2>Almost done</h2></div>
+<label class="f">Anything else we should know?<small>Allergies, mobility needs, children’s ages, swimming ability…</small><textarea name="notes"></textarea></label>
+<fieldset class="f"><legend style="padding:0;margin-bottom:8px">How would you like to pay?</legend><div class="chips" id="pay"></div></fieldset>
+<label class="chip agree"><input type="checkbox" id="agree" required><span id="agreeTxt"></span></label>
+<input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+<div id="status" role="status"></div>
+<div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap"><button class="btn" id="send" type="submit">Send booking request</button><button class="link" type="reset" id="clear">Clear form</button></div>
+<p class="sub">After you send: we message you on WhatsApp with availability, price and pickup details.</p>
+</div>
+</form>
+<div class="card" id="done" hidden></div>
+</div>
+<script>
+/* ============ EDIT THIS PART ============ */
+const CONFIG = {
+  homestayName: "[HOMESTAY NAME]",
+  confirmTime: "1 hour",
+  scriptUrl: "",          // paste your Google Apps Script web app URL here
+  whatsappNumber: "",     // optional, digits only with country code, e.g. 94771234567
+  paymentOptions: ["Pay at the homestay", "Bank transfer", "Cash on the day"]
+};
+/* To add a service later, copy one block below and change the words.
+   Field types: date, time, number, text, chips (give "options"). */
+const SERVICES = [
+  {id:"kayak", name:"Kayaking", blurb:"Guided or self-paced paddle.", fields:[
+    {k:"Preferred date", t:"date"}, {k:"People", t:"number"},
+    {k:"Time slot", t:"chips", o:["Sunrise","Morning","Afternoon"]}]},
+  {id:"surf", name:"Surfing", blurb:"Lessons or board hire.", fields:[
+    {k:"I want", t:"chips", o:["Lesson","Board hire only"]},
+    {k:"Experience level", t:"chips", o:["Never surfed","Beginner","Intermediate","Advanced"]},
+    {k:"Preferred date", t:"date"}, {k:"People", t:"number"}]},
+  {id:"canoe", name:"Canoe boating", blurb:"Calm-water trip.", fields:[
+    {k:"Preferred date", t:"date"}, {k:"Preferred time", t:"time"}, {k:"People", t:"number"}]},
+  {id:"cab", name:"Cab booking", blurb:"Airport, sightseeing or day hire.", fields:[
+    {k:"Trip type", t:"chips", o:["Airport pickup","Airport drop","Sightseeing / day hire","One-way transfer"]},
+    {k:"Pickup location", t:"text"}, {k:"Drop location", t:"text"},
+    {k:"Date", t:"date"}, {k:"Pickup time", t:"time"},
+    {k:"Passengers", t:"number"}, {k:"Large bags", t:"number"},
+    {k:"Flight number (airport trips)", t:"text"},
+    {k:"Vehicle", t:"chips", o:["Car","Van","Tuk-tuk"]}]}
+];
+/* ============ END OF EDIT AREA ============ */
+
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const form = $("#form");
+
+$("#hName").textContent = CONFIG.homestayName;
+$("#hLine").textContent = "Kayaking, surfing, canoe trips and cabs, all arranged by us. It takes about 2 minutes. We confirm on WhatsApp within " + CONFIG.confirmTime + ".";
+$("#agreeTxt").textContent = "I understand my booking is only confirmed when " + CONFIG.homestayName + " replies on WhatsApp.";
+$("#lastNum").textContent = "4";
+$("#pay").innerHTML = CONFIG.paymentOptions.map(o => `<label class="chip"><input type="radio" name="pay" value="${esc(o)}">${esc(o)}</label>`).join("");
+
+$("#tiles").innerHTML = SERVICES.map(s => `<label class="tile"><input type="checkbox" data-svc="${s.id}"><span><b>${esc(s.name)}</b><br><span class="sub">${esc(s.blurb)}</span></span></label>`).join("");
+$("#blocks").innerHTML = SERVICES.map(s => `<fieldset class="block" id="blk-${s.id}" hidden><h3>${esc(s.name)}</h3><div class="row">${s.fields.map((f, i) => field(s, f, i)).join("")}</div></fieldset>`).join("");
+
+function field(s, f, i) {
+  const n = `${s.id}_${i}`;
+  if (f.t === "chips") return `<fieldset class="f" style="flex-basis:100%"><legend style="padding:0;margin-bottom:8px">${esc(f.k)}</legend><div class="chips">${f.o.map(o => `<label class="chip"><input type="radio" name="${n}" value="${esc(o)}">${esc(o)}</label>`).join("")}</div></fieldset>`;
+  const extra = f.t === "number" ? ' min="0" inputmode="numeric"' : "";
+  return `<label class="f">${esc(f.k)}<input type="${f.t}" name="${n}"${extra}></label>`;
+}
+
+const today = new Date().toISOString().slice(0, 10);
+form.checkin.min = today;
+form.checkin.addEventListener("change", () => { form.checkout.min = form.checkin.value || today; });
+
+document.addEventListener("change", (e) => {
+  const id = e.target.dataset && e.target.dataset.svc;
+  if (!id) return;
+  $("#blk-" + id).hidden = !e.target.checked;
+  $("#detailsCard").hidden = !document.querySelector("[data-svc]:checked");
+  $("#lastNum").textContent = $("#detailsCard").hidden ? "3" : "4";
+  document.querySelector("[data-svc]").setCustomValidity("");
+});
+
+function collect() {
+  const picked = SERVICES.filter(s => document.querySelector(`[data-svc="${s.id}"]`).checked);
+  const details = picked.map(s => {
+    const lines = s.fields.map((f, i) => {
+      const n = `${s.id}_${i}`;
+      const el = f.t === "chips" ? form.querySelector(`[name="${n}"]:checked`) : form.elements[n];
+      return el && el.value ? `${f.k}: ${el.value}` : null;
+    }).filter(Boolean);
+    return `${s.name}\n  ${lines.join("\n  ") || "(no details given)"}`;
+  }).join("\n\n");
+  const pay = form.querySelector('[name="pay"]:checked');
+  return {
+    website: form.website.value, name: form.name.value.trim(), whatsapp: form.whatsapp.value.trim(),
+    checkin: form.checkin.value, checkout: form.checkout.value, room: form.room.value.trim(),
+    guests: form.guests.value, services: picked.map(s => s.name).join(", "), details,
+    notes: form.notes.value.trim(), payment: pay ? pay.value : ""
+  };
+}
+const waLink = (text) => CONFIG.whatsappNumber ? `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(text)}` : "";
+const summary = (d) => `Hi ${CONFIG.homestayName}, I’d like to book:\n\n${d.details}\n\nName: ${d.name}\nStay: ${d.checkin} to ${d.checkout}${d.room ? " (" + d.room + ")" : ""}\nGuests: ${d.guests}${d.notes ? "\nNotes: " + d.notes : ""}`;
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const none = !document.querySelector("[data-svc]:checked");
+  document.querySelector("[data-svc]").setCustomValidity(none ? "Tick at least one activity." : "");
+  if (form.checkout.value && form.checkout.value < form.checkin.value) form.checkout.setCustomValidity("Check-out must be after check-in."); else form.checkout.setCustomValidity("");
+  if (!form.reportValidity()) return;
+  const d = collect(), st = $("#status"), btn = $("#send");
+  if (!CONFIG.scriptUrl:"//script.google.com/macros/s/AKfycbwUTF5Z_VcXNsaPWRqaIMTpVV3VNIFM70x4t3j71htJaFdFNWAXL_bAMiZS9fZ5GCFEIw/exec") { st.className = "msg err"; st.textContent = "Setup not finished: add your Google Apps Script link to CONFIG.scriptUrl in this file."; return; }
+  btn.disabled = true; btn.textContent = "Sending…"; st.className = ""; st.textContent = "";
+  try {
+    await fetch(CONFIG.scriptUrl:https:"//script.google.com/macros/s/AKfycbwUTF5Z_VcXNsaPWRqaIMTpVV3VNIFM70x4t3j71htJaFdFNWAXL_bAMiZS9fZ5GCFEIw/exec", { method: "POST", mode: "no-cors", body: JSON.stringify(d) });
+    form.hidden = true;
+    const wa = waLink(summary(d));
+    $("#done").hidden = false;
+    $("#done").innerHTML = `<h2>Request sent</h2><p>Thank you, ${esc(d.name)}. We’ll confirm on WhatsApp within ${esc(CONFIG.confirmTime)}.</p><pre>${esc(d.details)}</pre>${wa ? `<p class="sub">Want to be sure we see it? Send the same details on WhatsApp.</p><a class="btn" href="${wa}">Also send on WhatsApp</a>` : ""}`;
+    window.scrollTo({ top: 0 });
+  } catch (err) {
+    const wa = waLink(summary(d));
+    st.className = "msg err";
+    st.innerHTML = "We couldn’t send your request. Check your connection and try again." + (wa ? ` Or <a href="${wa}">send it on WhatsApp</a>.` : "");
+    btn.disabled = false; btn.textContent = "Send booking request";
+  }
+});
+form.addEventListener("reset", () => setTimeout(() => {
+  document.querySelectorAll(".block").forEach(b => b.hidden = true);
+  $("#detailsCard").hidden = true; $("#lastNum").textContent = "3";
+}));
+</script>
+</body>
+</html>
